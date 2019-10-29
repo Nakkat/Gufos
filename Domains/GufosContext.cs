@@ -26,7 +26,7 @@ namespace GUFOS_BackEnd.Domains
         {
             if (!optionsBuilder.IsConfigured)
             {
-                optionsBuilder.UseSqlServer("Server=DESKTOP-XVGT587\\SQLEXPRESS;Database=Gufos;Trusted_Connection=True;");
+                optionsBuilder.UseSqlServer("Server=DESKTOP-2P4HA47\\SQLEXPRESS;Database=Gufos;User Id=sa;Password=132;");
             }
         }
 
@@ -34,8 +34,11 @@ namespace GUFOS_BackEnd.Domains
         {
             modelBuilder.Entity<Categoria>(entity =>
             {
+                entity.HasKey(e => e.IdCategoria)
+                    .HasName("PK__Categori__A3C02A1079E74B64");
+
                 entity.HasIndex(e => e.Titulo)
-                    .HasName("UQ__Categori__7B406B561CBB40F4")
+                    .HasName("UQ__Categori__7B406B561DCC1CD0")
                     .IsUnique();
 
                 entity.Property(e => e.Titulo).IsUnicode(false);
@@ -43,29 +46,35 @@ namespace GUFOS_BackEnd.Domains
 
             modelBuilder.Entity<Evento>(entity =>
             {
+                entity.HasKey(e => e.IdEvento)
+                    .HasName("PK__Eventos__034EFC04EF1B7169");
+
                 entity.Property(e => e.AcessoLivre).HasDefaultValueSql("((1))");
 
                 entity.Property(e => e.Titulo).IsUnicode(false);
 
-                entity.HasOne(d => d.Categoria)
+                entity.HasOne(d => d.IdCategoriaNavigation)
                     .WithMany(p => p.Evento)
-                    .HasForeignKey(d => d.CategoriaId)
-                    .HasConstraintName("FK__Evento__Categori__571DF1D5");
+                    .HasForeignKey(d => d.IdCategoria)
+                    .HasConstraintName("FK__Eventos__IdCateg__44FF419A");
 
-                entity.HasOne(d => d.Localizacao)
+                entity.HasOne(d => d.IdLocalizacaoNavigation)
                     .WithMany(p => p.Evento)
-                    .HasForeignKey(d => d.LocalizacaoId)
-                    .HasConstraintName("FK__Evento__Localiza__59063A47");
+                    .HasForeignKey(d => d.IdLocalizacao)
+                    .HasConstraintName("FK__Eventos__IdLocal__46E78A0C");
             });
 
             modelBuilder.Entity<Localizacao>(entity =>
             {
+                entity.HasKey(e => e.IdLocalizacao)
+                    .HasName("PK__Localiza__C96A5BF67C936AAE");
+
                 entity.HasIndex(e => e.Cnpj)
-                    .HasName("UQ__Localiza__AA57D6B4973E14E8")
+                    .HasName("UQ__Localiza__AA57D6B4B375090F")
                     .IsUnique();
 
                 entity.HasIndex(e => e.RazaoSocial)
-                    .HasName("UQ__Localiza__7DD02876D1B756E6")
+                    .HasName("UQ__Localiza__448779F0F99EED33")
                     .IsUnique();
 
                 entity.Property(e => e.Cnpj)
@@ -79,23 +88,29 @@ namespace GUFOS_BackEnd.Domains
 
             modelBuilder.Entity<Presenca>(entity =>
             {
+                entity.HasKey(e => e.IdPresenca)
+                    .HasName("PK__Presenca__50FB6F5D2FC36235");
+
                 entity.Property(e => e.PresencaStatus).IsUnicode(false);
 
-                entity.HasOne(d => d.Evento)
+                entity.HasOne(d => d.IdEventoNavigation)
                     .WithMany(p => p.Presenca)
-                    .HasForeignKey(d => d.EventoId)
-                    .HasConstraintName("FK__Presenca__Evento__5BE2A6F2");
+                    .HasForeignKey(d => d.IdEvento)
+                    .HasConstraintName("FK__Presenca__IdEven__49C3F6B7");
 
-                entity.HasOne(d => d.Usuario)
+                entity.HasOne(d => d.IdUsuarioNavigation)
                     .WithMany(p => p.Presenca)
-                    .HasForeignKey(d => d.UsuarioId)
-                    .HasConstraintName("FK__Presenca__Usuari__5CD6CB2B");
+                    .HasForeignKey(d => d.IdUsuario)
+                    .HasConstraintName("FK__Presenca__IdUsua__4AB81AF0");
             });
 
             modelBuilder.Entity<TipoUsuario>(entity =>
             {
+                entity.HasKey(e => e.IdTipoUsuario)
+                    .HasName("PK__TipoUsua__CA04062BCDDC0C51");
+
                 entity.HasIndex(e => e.Titulo)
-                    .HasName("UQ__Tipo_usu__7B406B56CD379D11")
+                    .HasName("UQ__TipoUsua__7B406B56F574C799")
                     .IsUnique();
 
                 entity.Property(e => e.Titulo).IsUnicode(false);
@@ -103,8 +118,11 @@ namespace GUFOS_BackEnd.Domains
 
             modelBuilder.Entity<Usuario>(entity =>
             {
+                entity.HasKey(e => e.IdUsuario)
+                    .HasName("PK__Usuario__5B65BF973A99CC2B");
+
                 entity.HasIndex(e => e.Email)
-                    .HasName("UQ__Usuario__A9D105346F6AEF50")
+                    .HasName("UQ__Usuario__A9D10534CEFF7E9C")
                     .IsUnique();
 
                 entity.Property(e => e.Email).IsUnicode(false);
@@ -113,10 +131,10 @@ namespace GUFOS_BackEnd.Domains
 
                 entity.Property(e => e.Senha).IsUnicode(false);
 
-                entity.HasOne(d => d.TipoUsuario)
+                entity.HasOne(d => d.IdTipoUsuarioNavigation)
                     .WithMany(p => p.Usuario)
-                    .HasForeignKey(d => d.TipoUsuarioId)
-                    .HasConstraintName("FK__Usuario__Tipo_us__4D94879B");
+                    .HasForeignKey(d => d.IdTipoUsuario)
+                    .HasConstraintName("FK__Usuario__IdTipoU__3B75D760");
             });
 
             OnModelCreatingPartial(modelBuilder);

@@ -5,7 +5,6 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace GUFOS_BackEnd.Domains
 {
-    [Table("Tipo_usuario")]
     public partial class TipoUsuario
     {
         public TipoUsuario()
@@ -14,13 +13,12 @@ namespace GUFOS_BackEnd.Domains
         }
 
         [Key]
-        [Column("Tipo_usuario_id")]
-        public int TipoUsuarioId { get; set; }
+        public int IdTipoUsuario { get; set; }
         [Required]
         [StringLength(255)]
         public string Titulo { get; set; }
 
-        [InverseProperty("TipoUsuario")]
+        [InverseProperty("IdTipoUsuarioNavigation")]
         public virtual ICollection<Usuario> Usuario { get; set; }
     }
 }

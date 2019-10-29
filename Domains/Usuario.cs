@@ -13,8 +13,7 @@ namespace GUFOS_BackEnd.Domains
         }
 
         [Key]
-        [Column("Usuario_id")]
-        public int UsuarioId { get; set; }
+        public int IdUsuario { get; set; }
         [Required]
         [StringLength(255)]
         public string Nome { get; set; }
@@ -24,13 +23,12 @@ namespace GUFOS_BackEnd.Domains
         [Required]
         [StringLength(255)]
         public string Senha { get; set; }
-        [Column("Tipo_usuario_id")]
-        public int? TipoUsuarioId { get; set; }
+        public int? IdTipoUsuario { get; set; }
 
-        [ForeignKey(nameof(TipoUsuarioId))]
-        [InverseProperty("Usuario")]
-        public virtual TipoUsuario TipoUsuario { get; set; }
-        [InverseProperty("Usuario")]
+        [ForeignKey(nameof(IdTipoUsuario))]
+        [InverseProperty(nameof(TipoUsuario.Usuario))]
+        public virtual TipoUsuario IdTipoUsuarioNavigation { get; set; }
+        [InverseProperty("IdUsuarioNavigation")]
         public virtual ICollection<Presenca> Presenca { get; set; }
     }
 }

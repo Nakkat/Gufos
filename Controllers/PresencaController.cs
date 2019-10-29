@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using GUFOS_BackEnd.Domains;
+using GUFOS_BackEnd.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,28 +11,28 @@ namespace GUFOS_BackEnd.Controllers
     [ApiController]
     public class PresencaController : ControllerBase
     {
-        GufosContext _context = new GufosContext();
+        PresencaRepository repositorio = new PresencaRepository();
 
 
         // GET: api/Presenca/
         [HttpGet]
         public async Task<ActionResult<List<Presenca>>> Get()
         {
-            var presencas = await _context.Presenca.Include("Evento").Include("Usuario").ToListAsync();
+            var presenca = await repositorio.Listar();
 
-            if (presencas == null)
+            if (presenca == null)
             {
                 return NotFound();
             }
 
-            return presencas;
+            return presenca;
         }
 
         // GET: api/Presenca/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Presenca>> Get(int id)
         {
-            var presenca = await _context.Presenca.Include("Evento").Include("Usuario").FirstOrDefaultAsync(e => e.PresencaId == id);
+            var presenca = await repositorio.BuscarPorID(id);
 
             if (presenca == null)
             {
@@ -47,36 +48,34 @@ namespace GUFOS_BackEnd.Controllers
         {
             try
             {
-                await _context.AddAsync(presenca);
-                await _context.SaveChangesAsync();
+                await repositorio.Salvar(presenca);
+                return presenca;
             }
             catch (DbUpdateConcurrencyException)
             {
-                throw;
+                 return BadRequest();
             }
-
-            return presenca;
         }        
 
 
         // PUT: api/Presenca/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(long id, Presenca presenca)
+        public async Task<IActionResult> Put(int id, Presenca presenca)
         {
-            if (id != presenca.PresencaId)
+            if (id != presenca.IdPresenca)
             {
                 return BadRequest();
             }
 
-            _context.Entry(presenca).State = EntityState.Modified;
+           
 
             try
             {
-                await _context.SaveChangesAsync();
+                await repositorio.Alterar(presenca);
             }
             catch (DbUpdateConcurrencyException)
             {
-                var presenca_valido = await _context.Presenca.FindAsync(id);
+                 var presenca_valido = repositorio.BuscarPorID(id);
 
                 if (presenca_valido == null)
                 {
@@ -95,14 +94,13 @@ namespace GUFOS_BackEnd.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult<Presenca>> Delete(int id)
         {
-            var presenca = await _context.Presenca.FindAsync(id);
+            var presenca = await repositorio.BuscarPorID(id);
             if (presenca == null)
             {
                 return NotFound();
             }
 
-            _context.Presenca.Remove(presenca);
-            await _context.SaveChangesAsync();
+            presenca = await repositorio.Excluir(presenca);
 
             return presenca;
         }

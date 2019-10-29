@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using GUFOS_BackEnd.Domains;
+using GUFOS_BackEnd.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,14 +11,14 @@ namespace GUFOS_BackEnd.Controllers
     [ApiController]
     public class LocalizacaoController : ControllerBase
     {
-        GufosContext _context = new GufosContext();
+        LocalizacaoRepository repositorio = new LocalizacaoRepository();
 
 
         // GET: api/Localizacao/
         [HttpGet]
         public async Task<ActionResult<List<Localizacao>>> Get()
         {
-            var localizacao = await _context.Localizacao.ToListAsync();
+            var localizacao = await repositorio.Listar();
 
             if (localizacao == null)
             {
@@ -31,7 +32,7 @@ namespace GUFOS_BackEnd.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Localizacao>> Get(int id)
         {
-            var localizacao = await _context.Localizacao.FindAsync(id);
+            var localizacao = await repositorio.BuscarPorID(id);
 
             if (localizacao == null)
             {
@@ -47,36 +48,34 @@ namespace GUFOS_BackEnd.Controllers
         {
             try
             {
-                await _context.AddAsync(localizacao);
-                await _context.SaveChangesAsync();
+                await repositorio.Salvar(localizacao);
+                return localizacao;
             }
             catch (DbUpdateConcurrencyException)
             {
-                throw;
+                 return BadRequest();
             }
-
-            return localizacao;
         }        
 
 
         // PUT: api/Localizacao/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(long id, Localizacao localizacao)
+        public async Task<IActionResult> Put(int id, Localizacao localizacao)
         {
-            if (id != localizacao.LocalizacaoId)
+            if (id != localizacao.IdLocalizacao)
             {
                 return BadRequest();
             }
 
-            _context.Entry(localizacao).State = EntityState.Modified;
+           
 
             try
             {
-                await _context.SaveChangesAsync();
+                await repositorio.Alterar(localizacao);
             }
             catch (DbUpdateConcurrencyException)
             {
-                var localizacao_valido = await _context.Localizacao.FindAsync(id);
+                 var localizacao_valido = repositorio.BuscarPorID(id);
 
                 if (localizacao_valido == null)
                 {
@@ -95,14 +94,13 @@ namespace GUFOS_BackEnd.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult<Localizacao>> Delete(int id)
         {
-            var localizacao = await _context.Localizacao.FindAsync(id);
+            var localizacao = await repositorio.BuscarPorID(id);
             if (localizacao == null)
             {
                 return NotFound();
             }
 
-            _context.Localizacao.Remove(localizacao);
-            await _context.SaveChangesAsync();
+            localizacao = await repositorio.Excluir(localizacao);
 
             return localizacao;
         }

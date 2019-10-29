@@ -13,13 +13,12 @@ namespace GUFOS_BackEnd.Domains
         }
 
         [Key]
-        [Column("Categoria_id")]
-        public int CategoriaId { get; set; }
+        public int IdCategoria { get; set; }
         [Required]
         [StringLength(255)]
         public string Titulo { get; set; }
 
-        [InverseProperty("Categoria")]
+        [InverseProperty("IdCategoriaNavigation")]
         public virtual ICollection<Evento> Evento { get; set; }
     }
 }

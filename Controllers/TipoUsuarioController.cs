@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using GUFOS_BackEnd.Domains;
+using GUFOS_BackEnd.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,28 +11,28 @@ namespace GUFOS_BackEnd.Controllers
     [ApiController]
     public class TipoUsuarioController : ControllerBase
     {
-        GufosContext _context = new GufosContext();
+        TipoUsuarioRepository repositorio = new TipoUsuarioRepository();
 
 
         // GET: api/TipoUsuario/
         [HttpGet]
         public async Task<ActionResult<List<TipoUsuario>>> Get()
         {
-            var tipoUsuarios = await _context.TipoUsuario.ToListAsync();
+            var tipoUsuario = await repositorio.Listar();
 
-            if (tipoUsuarios == null)
+            if (tipoUsuario == null)
             {
                 return NotFound();
             }
 
-            return tipoUsuarios;
+            return tipoUsuario;
         }
 
         // GET: api/TipoUsuario/5
         [HttpGet("{id}")]
         public async Task<ActionResult<TipoUsuario>> Get(int id)
         {
-            var tipoUsuario = await _context.TipoUsuario.FindAsync(id);
+            var tipoUsuario = await repositorio.BuscarPorID(id);
 
             if (tipoUsuario == null)
             {
@@ -47,36 +48,34 @@ namespace GUFOS_BackEnd.Controllers
         {
             try
             {
-                await _context.AddAsync(tipoUsuario);
-                await _context.SaveChangesAsync();
+                await repositorio.Salvar(tipoUsuario);
+                return tipoUsuario;
             }
             catch (DbUpdateConcurrencyException)
             {
-                throw;
+                 return BadRequest();
             }
-
-            return tipoUsuario;
         }        
 
 
         // PUT: api/TipoUsuario/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(long id, TipoUsuario tipoUsuario)
+        public async Task<IActionResult> Put(int id, TipoUsuario tipoUsuario)
         {
-            if (id != tipoUsuario.TipoUsuarioId)
+            if (id != tipoUsuario.IdTipoUsuario)
             {
                 return BadRequest();
             }
 
-            _context.Entry(tipoUsuario).State = EntityState.Modified;
+           
 
             try
             {
-                await _context.SaveChangesAsync();
+                await repositorio.Alterar(tipoUsuario);
             }
             catch (DbUpdateConcurrencyException)
             {
-                var tipoUsuario_valido = await _context.TipoUsuario.FindAsync(id);
+                 var tipoUsuario_valido = repositorio.BuscarPorID(id);
 
                 if (tipoUsuario_valido == null)
                 {
@@ -95,14 +94,13 @@ namespace GUFOS_BackEnd.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult<TipoUsuario>> Delete(int id)
         {
-            var tipoUsuario = await _context.TipoUsuario.FindAsync(id);
+            var tipoUsuario = await repositorio.BuscarPorID(id);
             if (tipoUsuario == null)
             {
                 return NotFound();
             }
 
-            _context.TipoUsuario.Remove(tipoUsuario);
-            await _context.SaveChangesAsync();
+            tipoUsuario = await repositorio.Excluir(tipoUsuario);
 
             return tipoUsuario;
         }

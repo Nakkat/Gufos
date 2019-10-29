@@ -64,7 +64,7 @@ namespace GUFOS_BackEnd.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(int id, Categoria categoria)
         {
-            if (id != categoria.CategoriaId)
+            if (id != categoria.IdCategoria)
             {
                 return BadRequest();
             }

@@ -13,28 +13,24 @@ namespace GUFOS_BackEnd.Domains
         }
 
         [Key]
-        [Column("Evento_id")]
-        public int EventoId { get; set; }
+        public int IdEvento { get; set; }
         [Required]
         [StringLength(255)]
         public string Titulo { get; set; }
-        [Column("Categoria_id")]
-        public int? CategoriaId { get; set; }
+        public int? IdCategoria { get; set; }
         [Required]
-        [Column("Acesso_livre")]
         public bool? AcessoLivre { get; set; }
-        [Column("Data_evento", TypeName = "datetime")]
+        [Column(TypeName = "datetime")]
         public DateTime DataEvento { get; set; }
-        [Column("Localizacao_id")]
-        public int? LocalizacaoId { get; set; }
+        public int? IdLocalizacao { get; set; }
 
-        [ForeignKey(nameof(CategoriaId))]
-        [InverseProperty("Evento")]
-        public virtual Categoria Categoria { get; set; }
-        [ForeignKey(nameof(LocalizacaoId))]
-        [InverseProperty("Evento")]
-        public virtual Localizacao Localizacao { get; set; }
-        [InverseProperty("Evento")]
+        [ForeignKey(nameof(IdCategoria))]
+        [InverseProperty(nameof(Categoria.Evento))]
+        public virtual Categoria IdCategoriaNavigation { get; set; }
+        [ForeignKey(nameof(IdLocalizacao))]
+        [InverseProperty(nameof(Localizacao.Evento))]
+        public virtual Localizacao IdLocalizacaoNavigation { get; set; }
+        [InverseProperty("IdEventoNavigation")]
         public virtual ICollection<Presenca> Presenca { get; set; }
     }
 }

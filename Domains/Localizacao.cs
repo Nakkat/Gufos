@@ -13,21 +13,19 @@ namespace GUFOS_BackEnd.Domains
         }
 
         [Key]
-        [Column("Localizacao_id")]
-        public int LocalizacaoId { get; set; }
+        public int IdLocalizacao { get; set; }
         [Required]
         [Column("CNPJ")]
         [StringLength(14)]
         public string Cnpj { get; set; }
         [Required]
-        [Column("Razao_social")]
         [StringLength(255)]
         public string RazaoSocial { get; set; }
         [Required]
         [StringLength(255)]
         public string Endereco { get; set; }
 
-        [InverseProperty("Localizacao")]
+        [InverseProperty("IdLocalizacaoNavigation")]
         public virtual ICollection<Evento> Evento { get; set; }
     }
 }

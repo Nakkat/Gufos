@@ -8,22 +8,18 @@ namespace GUFOS_BackEnd.Domains
     public partial class Presenca
     {
         [Key]
-        [Column("Presenca_id")]
-        public int PresencaId { get; set; }
-        [Column("Evento_id")]
-        public int? EventoId { get; set; }
-        [Column("Usuario_id")]
-        public int? UsuarioId { get; set; }
+        public int IdPresenca { get; set; }
+        public int? IdEvento { get; set; }
+        public int? IdUsuario { get; set; }
         [Required]
-        [Column("Presenca_status")]
         [StringLength(255)]
         public string PresencaStatus { get; set; }
 
-        [ForeignKey(nameof(EventoId))]
-        [InverseProperty("Presenca")]
-        public virtual Evento Evento { get; set; }
-        [ForeignKey(nameof(UsuarioId))]
-        [InverseProperty("Presenca")]
-        public virtual Usuario Usuario { get; set; }
+        [ForeignKey(nameof(IdEvento))]
+        [InverseProperty(nameof(Evento.Presenca))]
+        public virtual Evento IdEventoNavigation { get; set; }
+        [ForeignKey(nameof(IdUsuario))]
+        [InverseProperty(nameof(Usuario.Presenca))]
+        public virtual Usuario IdUsuarioNavigation { get; set; }
     }
 }
