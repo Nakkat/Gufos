@@ -1,0 +1,40 @@
+Gufos
+
+Usuario
+
+- IdUsuario
+- Nome
+- IdTipoUsuario
+- Email
+- Senha
+
+Tipo Usuario
+
+- IdTipoUsuario
+- Titulo 
+
+Categoria
+
+- IdCategoria
+- Titulo
+
+Evento
+
+- IdEvento
+- Titulo
+- DataEvento
+- IdCategoria
+- IdLocalizacao
+- AcessoLivre
+
+Localizacao
+
+- IdLocalizacao
+- Endereco
+
+Presencas (Usuario x Evento) - 1-1
+
+- IdPresenca
+- IdUsuario
+- IdEvento
+- Status
