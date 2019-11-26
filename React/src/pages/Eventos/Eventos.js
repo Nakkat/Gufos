@@ -1,362 +1,443 @@
-import React, { Component } from 'react';
-import Rodape from '../../components/Rodape/Rodape';
-import { MDBContainer, MDBBtn, MDBModal, MDBModalBody, MDBModalHeader, MDBModalFooter, MDBInput } from 'mdbreact';
+import React, {Component} from 'react';
 import Cabecalho from '../../components/Cabecalho/Cabecalho';
+import Rodape from '../../components/Rodape/Rodape';
+import api from '../../services/api';
+import { MDBBtn, MDBInput, MDBAlert, MDBContainer, MDBModal, MDBModalBody, MDBModalHeader, MDBModalFooter} from "mdbreact";
 
-// Começando a página criando meu construtor 
-class Eventos extends Component {
-    constructor() {
-        super();
+
+export default class Eventos extends Component{
+
+    constructor(){
+        super()
         this.state = {
-            listaEventos: [],
-            listaCategorias: [],
-            tituloEvento: "",
-            dataEvento: "",
-            acessoLivre: false,
-            localiacao: "",
-            loading: false,
-            erroMsg: "",
-            editarModal : {
+            
+            listaEventos        : [],
+            listaCategorias     : [],
+            listaLocalizacao    : [],
+            
+            postEvento : {
+                titulo: "",
                 categoriaId: "",
-                tituloEvento: "",
-                dataEvento: "",
                 acessoLivre: "",
-                localizacao: "",
+                dataEvento: "",
+                localizacaoId: "",
+            },
+
+            putEvento : {
+                eventoId: "",
+                titulo: "",
+                categoriaId: "",
+                acessoLivre: "",
+                dataEvento: "",
+                localizacaoId: "",
+            },
+
+            erroMsg : "",
+            successMsg : "",
+            modal: false,
 
         }
-    }
-
-    }
-
-    // Ciclo de vida dos componentes 
-
-    UNSAFE_componentWillMount() {
-        //prop para guardar as informações
-        console.log("Carregando");
-    }
-
-    componentDidMount() {
-        //console.log('Did');
-        document.title = this.props.titulo_pagina;
-        console.log(this.state.listaEventos);
-        this.listarEventos();
-    }
-
-    UNSAFE_componentWillUpdate() {
-        //console.log("WillUpdate");
-    }
-
-    componentDidUpdate() {
-        //console.log("Update");
-        console.log("Atualizando")
-    }
-
-    componentWillUnmount() {
-        //console.log("Unmount")
-        console.log("Saindo")
-    }
 
 
-    // Atualizar o estado de todos os states pra não precisar atualizar um por um
 
-
-    atualizaEstado = (input) => {
-        let nomePropriedade = input.target.name;
-        this.setState({
-            [input.target.name]: input.target.value
-        },
-            () => console.log("Novo valor: ", this.state[nomePropriedade])
-        );
-    }
-
-    // Get - Listagem dos eventos, categorias e localização
-
-    listaEventos = () => {
-        fetch("http://localhost:5000/api/Evento")
-            .then(response => response.json())
-            .then(data => this.setState({ listaEventos: data }))
-    }
-
-    listaCategorias = () => {
-        fetch("http://localhost:5000/api/Categorias")
-            .then(response => response.json())
-            .then(data => this.setState({ listaEventos: data }))
-    }
-
-    // Post - Cadastrar evento
-
-    cadastrarEvento(event) {
-
-        event.preventDefault();
-        console.log("Cadastrando");
-
-        fetch("http://localhost:5000/api/evento", {
-            method: "POST",
-            body: JSON.stringify({
-                titulo: this.state.titulo,
-                categoria: (this.state.categoria === undefined) ? '' : this.evento.categoria.titulo,
-                acessoLivre: (this.state.acessoLivre === false) ? 'não' : 'sim',
-                data: this.state.data,
-                localizacao: (this.state.localizacao === undefined) ? '' : this.evento.localizacao.endereco,
-            }),
-
-            headers: {
-                "Content-Type": "application/json"
-            }
-        })
-            .then(response => response.json())
-            .then(response => {
-                console.log(response);
-                this.listaEventos();
-            })
-            .catch(error => console.log(error))
-    }
-
-    // PUT - alterar evento
-
-    alterarEvento = (produto) => {
-        console.log(produto);
-
-        this.setState({
-            editarModal: {
-                eventoId: produto.eventoId,
-                titulo: produto.titulo,
-                categoria: produto.categoria,
-                acessoLivre: produto.acessoLivre,
-                data: produto.dataEvento,
-                localizacao: produto.localizacao
-
-            }
-        })
-
-        // Abrir Modal
-        this.toggle();
-    }
-
-    salvarAlteracoes = (evento) => {
-
-        evento.preventDefault();
-        console.log(this.state.editarModal);
-
-        fetch("http://localhost:5000/api/evento/" + this.state.editarModal.eventoId, {
-            method: "PUT",
-            body: JSON.stringify(this.state.editarModal),
-            headers: {
-                "Content-Type": "application/json"
-            }
-        })
-            .then(response => response.json())
-            .then(
-                setTimeout(() => {
-                    this.listaAtualizada()
-                }, 2300)
-            )
-            .catch(error => console.log(error))
-
-        // FecharModal
-        this.toggle();
     }
 
     toggle = () => {
-
-
+        this.setState({
+          modal: !this.state.modal
+        });
     }
 
-    // DELETE - deletar evento 
-    deletarEvento = (id) => {
+    componentDidMount(){
+        this.getEventos();
+        this.getCategorias();
+        this.getLocalizacao();
+    }
 
-        this.setState({ erroMsg: "" })
 
-        console.log("Excluindo");
-
-        fetch("http://localhost:5000/api/evento/" + id, {
-            method: "DELETE",
-            headers: {
-                "Content-Type": "application/json"
+    //#region GETs
+    getEventos = () =>{
+        api.get('/evento')
+        .then(response => {
+            if(response.status === 200){
+                this.setState({ listaEventos : response.data })
             }
         })
-            .then(response => response.json())
-            .then(response => {
-                console.log(response);
-                this.listaAtualizada();
-                this.setState(() => ({ lista: this.state.lista }));
-            })
-            .catch(error => {
-                console.log(error)
-                this.setState({ erroMsg: "Não foi possível excluir, verifique se não há eventos cadastrados nesta Evento" })
-            })
     }
 
+    getCategorias = () => {
+        api.get('/categoria')
+        .then(response => {
+            if(response.status === 200){
+                this.setState({ listaCategorias : response.data })
+            }
+        })
+    }
+
+    getLocalizacao = () => {
+        api.get('/localizacao')
+        .then(response => {
+            if(response.status === 200){
+                this.setState({ listaLocalizacao : response.data })
+            }
+        })
+    }
+    //#endregion
 
 
+    //#region POSTs
+    postSetState = (input) =>{
+        this.setState({
+            postEvento : {
+                ...this.state.postEvento, [input.target.name] : input.target.value
+            }
+        })
+    }
 
-    render() {
-        let { loading } = this.state;
-        return (
-            <div className="App">
-                <Cabecalho/>
-                
+    postEvento = (e) =>{
 
-                <main className="conteudoPrincipal">
-                    <section className="conteudoPrincipal-cadastro">
-                        <h1 className="conteudoPrincipal-cadastro-titulo">Eventos</h1>
+        e.preventDefault();
 
-                        <div className="container" id="conteudoPrincipal-lista">
-                            <table id="tabela-lista">
-                                <thead>
-                                    <tr>
-                                        <th>#</th>
-                                        <th>Título</th>
-                                        <th>Categoria</th>
-                                        <th>AcessoLivre</th>
-                                        <th>Data</th>
-                                        <th>Localização</th>
-                                        <th>Ação</th>
-                                    </tr>
-                                </thead>
+        // Converter para booleano
+        if(this.state.postEvento.acessoLivre === "0"){ 
+            this.state.postEvento.acessoLivre = false 
+        }else{
+            this.state.postEvento.acessoLivre = true
+        }
 
-                                <tbody id="tabela-lista-corpo">
-                                    {
-                                        this.state.listaEventos.map(function (event) {
-                                            return (
-                                                <tr key={event.eventoId}>
-                                                    <td>{event.eventoId}</td>
-                                                    <td>{event.titulo}</td>
-                                                    <td>{(event.categoria === undefined) ? '' : event.categoria.titulo}</td>
-                                                    <td>{(event.acessoLivre === false) ? 'não' : 'sim'}</td>
-                                                    <td>{event.dataEvento}</td>
-                                                    <td>{(event.localizacao === undefined) ? '' : event.localizacao.endereco}</td>
-                                                    <td>
-                                                        <button onClick={e => this.alterarEvento(event)}>Alterar</button>
-                                                        <button onClick={e => this.deletarEvento(event.eventoId)}>Excluir</button>
-                                                    </td>
-                                                </tr>
-                                            );
-                                        }.bind(this))
-                                    }
-                                </tbody>
-                            </table>
-                        </div>
+        api.post('/evento', this.state.postEvento)
+        .then(response => {
+            console.log(response);
+        })
+        .catch(error => {
+            console.log(error);
+            this.setState({ erroMsg : "Não foi possível cadastrar evento" });
+        })
 
-                        {loading && <i className="fa fa-spin fa-spinner fa-2x"></i>}
-                        {this.state.erroMsg && <div className="text-danger">{this.state.erroMsg}</div>}
-
-                        <div className="container" id="conteudoPrincipal-cadastro">
-                            <h2 className="conteudoPrincipal-cadastro-titulo">
-                                Cadastrar Evento
-                    </h2>
-                            <form onSubmit={this.cadastrarEvento}>
-                                <div className="container">
-
-                                    <input
-                                        type="text"
-                                        className="class__evento"
-                                        id="input__evento"
-                                        placeholder="Evento"
-                                        value={this.state.titulo}
-                                        name="tituloEventoInput"
-                                        onChange={this.atualizaEstado}
+        setTimeout(() => {
+            this.getEventos();
+        }, 1500);
+    }
+    //#endregion
 
 
-                                    />
-                                 <select
-                                        id="option__tipoevento"
-                                        value={this.state.tituloCategoriaInput}
-                                        name="tituloCategoriaInput"
-                                        onChange={this.atualizaEstado}
+    //#region DELETE
+    deleteEvento(id){
 
-                                        {
-                                            ...this.state.listaCategorias.map(function (categoria) {
-                                            return (
-                                                <option key={categoria.categoriaId} value={categoria.categoriaId}>{categoria.titulo}</option>
-                                            )
-                                        })
-                                        }
-                                    /> 
+        this.setState({ successMsg : "" })
 
+        api.delete('/evento/'+id)
+        .then(response => {
+            if(response.status === 200){
+                this.setState({ successMsg : "Excluído com sucesso" })
 
+                setTimeout(() => {
+                    this.getEventos();
+                }, 1500);
+            }
+        })
+        .catch(error => {
+            console.log(error);
+            this.setState({ erroMsg : "Falha ao excluir" })
+        })
+        
+    }
+    //#endregion
+    
+    //#region 
+    putSetState = (input) =>{
+        this.setState({
+            putEvento : {
+                ...this.state.putEvento, [input.target.name] : input.target.value
+            }   
+        })
+    }
+    
+    putEvento = (event) =>{
+        
+        event.preventDefault();
+        let evento_id = this.state.putEvento.eventoId;
+        let evento_alterado = this.state.putEvento;
+        
+        // Converter para booleano
+        if(this.state.putEvento.acessoLivre === "0"){ 
+            this.state.putEvento.acessoLivre = false 
+        }else{
+            this.state.putEvento.acessoLivre = true
+        }
+        
+        api.put('/evento/'+evento_id, evento_alterado)
+        .then(() => {
+            this.setState({successMsg : "Evento alterado com sucesso!"});
+        })
+        .catch(error => {
+            console.log(error);
+            this.setState({erroMsg : "Falha ao alterar o Evento"});
+        })
+        
+        this.toggle();
+        
+        setTimeout(() => {
+            this.getEventos();
+        }, 1500);
 
+        setTimeout(() => {
+            this.setState({successMsg : ""});
+            this.setState({erroMsg : ""});
+        }, 3500);
+        
+    }
+    
+    openModal = (e) =>{
+        
+        this.toggle();
+        this.setState({putEvento : e});
+        
+        console.log("PUT", this.state.putEvento);
+    }
+    //#endregion
+    
+    
+    render(){
+       return(
+           <>
+            <Cabecalho />
 
-                                    <select
+            <main className="conteudoPrincipal">
+                <section className="conteudoPrincipal-cadastro">
+                    <h1 className="conteudoPrincipal-cadastro-titulo">Eventos</h1>
+                    <div className="container" id="conteudoPrincipal-lista">
+                            {
+                                this.state.erroMsg && 
+                                <MDBAlert color="danger" >
+                                    {this.state.erroMsg}
+                                </MDBAlert>
+                            }
+                        
+                            {
+                            this.state.successMsg && 
+                                <MDBAlert color="success" >
+                                    {this.state.successMsg}
+                                </MDBAlert>
+                            }
+                    <table id="tabela-lista">
+                        <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Evento</th>
+                            <th>Data</th>
+                            <th>Acesso Livre</th>
+                            <th>Categoria</th>
+                            <th>Localização</th>
+                            <th>Ações</th>
+                        </tr>
+                        </thead>
 
-                                        id="option_acesso"
-                                        value={this.state.acessoLivre}
-                                        name="acessoInput"
-                                        onChange={this.atualizaEstado}
-                                    >
-                                        <option value="1">Livre</option>
-                                        <option value="0">Restrito</option>
-                                    </select>
+                        <tbody id="tabela-lista-corpo">
+                            {
+                                this.state.listaEventos.map( 
+                                    function (e) {
+                                        return(
+                                            <tr key={e.eventoId}>
+                                                <td>{e.eventoId}</td>
+                                                <td>{e.titulo}</td> 
+                                                <td>{e.dataEvento}</td>
+                                                <td>
+                                                    {e.acessoLivre && "Sim"}
+                                                    {!e.acessoLivre && "Não"}
+                                                </td>
+                                                <td>{e.categoria.titulo}</td>
+                                                <td>{e.localizacao.endereco}</td>
+                                                <td>
+                                                    <MDBBtn color="primary" size="sm" onClick={() => this.openModal(e)}>
+                                                        <i className="fas fa-edit"></i>
+                                                    </MDBBtn>
+                                                    <br />
+                                                    <MDBBtn color="danger" size="sm" onClick={() => this.deleteEvento(e.eventoId)}>
+                                                        <i className="fas fa-trash"></i>
+                                                    </MDBBtn>
+                                                </td>
+                                            </tr>
+                                        )
+                                    }.bind(this)
+                                )
+                            }
+                        </tbody>
+                    </table>
+                    </div>
 
-                                    <input
-                                        type="date"
-                                        className="class__evento"
-                                        id="input__evento"
-                                        placeholder="Data"
-                                        value={this.state.data}
-                                        name="dataInput"
-                                        onChange={this.atualizaEstado}
+                    <div className="container" id="conteudoPrincipal-cadastro">
+                    <h2 className="conteudoPrincipal-cadastro-titulo">Cadastrar Evento</h2>
+                    <form onSubmit={this.postEvento}>    
+                    <div className="container">
+                        <input
+                            type="text"
+                            id="evento__titulo"
+                            placeholder="título do evento"
+                            name="titulo"
+                            value={this.state.listaEventos.titulo}
+                            onChange={this.postSetState}
+                        />
+                        <input 
+                            type="datetime-local" 
+                            id="evento__data" 
+                            placeholder="dd/MM/yyyy"
+                            name="dataEvento"
+                            value={this.state.listaEventos.dataEvento}
+                            onChange={this.postSetState}
+                        />
+                        <select id="option__acessolivre"
+                            name="acessoLivre"
+                            value={this.state.postEvento.acessoLivre}
+                            onChange={this.postSetState}
+                        >
+                            <option value="1">Livre</option>
+                            <option value="0">Restrito</option>
+                        </select>
+                        <select id="option__tipoevento"
+                            name="categoriaId"
+                            value={this.state.listaEventos.categoriaId}
+                            onChange={this.postSetState}
+                        >
+                            <option value="">Escolha uma categoria...</option>
+                            {
+                                this.state.listaCategorias.map( function(c){
+                                    return(
+                                        <option 
+                                            key={c.categoriaId}
+                                            value={c.categoriaId}
+                                        >
+                                            {c.titulo}
+                                        </option>
+                                    )
+                                })
+                            }
+                        </select>
 
+                        <select id="option__enderecoevento"
+                            name="localizacaoId"
+                            value={this.state.listaEventos.localizacaoId}
+                            onChange={this.postSetState}
+                        >
+                        <option value="">Escolha um endereço...</option>
+                        {
+                                this.state.listaLocalizacao.map( function(l){
+                                    return(
+                                        <option 
+                                            key={l.localizacaoId}
+                                            value={l.localizacaoId}
+                                        >
+                                            {l.endereco}
+                                        </option>
+                                    )
+                                })
+                            }                        
+                        </select>
 
-                                    />
-                                    
-                                            <select
+                    <button
+                        className="conteudoPrincipal-btn conteudoPrincipal-btn-cadastro"
+                        type="submit"
+                    >
+                        Cadastrar
+                    </button>
+                    </div>
 
-                                            id="localizacaoEvento"
-                                            value={this.state.localizacao}
-                                            name="localizacaoInput"
-                                            onChange={this.atualizaEstado}
-                                        
-                                        {
-
-                                        ...this.state.localizacao.map (function(localizacao) {
-                                            return (
-                                                <option key={localizacao.localizacaoId} value={localizacao.localizacaoId}>{localizacao.endereco}</option>
-                                            )
-                                        })
-                                    }
-                                        
-                                            
-                                        />
-
-
-                                    
-
-                                    <button
-                                        id="btn__cadastrar"
-                                        className="conteudoPrincipal-btn conteudoPrincipal-btn-cadastro"
-                                    >
-                                        Cadastrar
-                        </button>
-                                </div>
-                            </form>
-                        </div>
-                    </section>
-                </main>
-
-                <MDBContainer>
-                    {/* <MDBBtn onClick={this.toggle}>Modal</MDBBtn> */}
-                    <form onSubmit={this.salvarAlteracoes}>
-                        <MDBModal isOpen={this.state.modal} toggle={this.toggle}>
-                             <MDBModalHeader toggle={this.toggle}>Editar <b>{this.state.editarModal.titulo}</b> </MDBModalHeader> 
-                            <MDBModalBody>
-                                <MDBInput
-                                    label="Evento"
-                                 value={this.state.editarModal.titulo}
-                                />
-                            </MDBModalBody>
-                            <MDBModalFooter>
-                                <MDBBtn color="secondary" onClick={this.toggle}>Fechar</MDBBtn>
-                                <MDBBtn color="primary" type="submit">Alterar</MDBBtn>
-                            </MDBModalFooter>
-                        </MDBModal>
                     </form>
-                </MDBContainer>
 
-                <Rodape />
-            </div>
-        );
+
+                    </div>
+                </section>
+
+
+            </main>
+
+            <MDBContainer>
+                <form onSubmit={this.putEvento}>
+                <MDBModal isOpen={this.state.modal} toggle={this.toggle}>
+                <MDBModalHeader toggle={this.toggle}>Editar - {this.state.putEvento.titulo}</MDBModalHeader>
+                    <MDBModalBody>
+
+                        <MDBInput 
+                            label="Titulo" 
+                            name="titulo"
+                            value={this.state.putEvento.titulo}
+                            onChange={this.putSetState}
+                        />
+
+                        <MDBInput
+                            type="datetime-local"
+                            label="Data do Evento" 
+                            name="dataEvento"
+                            value={this.state.putEvento.dataEvento.split(",")[0]}
+                            onChange={this.putSetState}
+                        />
+
+                        <select 
+                            name="acessoLivre" 
+                            className="browser-default custom-select"
+                            onChange={this.putSetState}
+                        >
+                                <option value={this.state.putEvento.acessoLivre}>
+                                    {this.state.putEvento.acessoLivre == 0 && "Restrito"}
+                                    {this.state.putEvento.acessoLivre == 1 && "Livre"}
+                                </option>
+                                <option value="0">Restrito</option>
+                                <option value="1">Livre</option>
+                        </select>
+                        
+                        <select 
+                            name="categoriaId" 
+                            className="browser-default custom-select"
+                            onChange={this.putSetState}
+                            value={this.state.putEvento.categoriaId}
+                        >  
+                            {
+                                this.state.listaCategorias.map( function(c){
+                                    return(
+                                        <option 
+                                            key={c.categoriaId}
+                                            value={c.categoriaId}
+                                        >
+                                            {c.titulo}
+                                        </option>
+                                    )
+                                })
+                            }
+                        </select>
+
+                        <select 
+                            name="localizacaoId" 
+                            className="browser-default custom-select"
+                            onChange={this.putSetState}
+                            value={this.state.putEvento.localizacaoId}
+                        >  
+                            {
+                                 this.state.listaLocalizacao.map( function(l){
+                                    return(
+                                        <option 
+                                            key={l.localizacaoId}
+                                            value={l.localizacaoId}
+                                        >
+                                            {l.endereco}
+                                        </option>
+                                    )
+                                })
+                            }
+                        </select>
+
+                        
+                    </MDBModalBody>
+                    <MDBModalFooter>
+                    <   MDBBtn color="secondary" onClick={this.toggle}>Fechar</MDBBtn>
+                        <MDBBtn color="primary" type="submit">Salvar</MDBBtn>
+                    </MDBModalFooter>
+                </MDBModal>
+                </form>
+            </MDBContainer>
+
+            <Rodape />
+           </>
+       ) 
     }
-}
 
-export default Eventos;
+}

@@ -16,24 +16,50 @@ import 'mdbreact/dist/css/mdb.css';
 
 
 // Importamos as dependências necessárias:
-import {Route, BrowserRouter as Router, Switch} from 'react-router-dom';
+import {Route, BrowserRouter as Router, Switch, Redirect} from 'react-router-dom';
 
 // Importamos as páginas criadas
 import Categorias from './pages/Categorias/Categorias';
 import Eventos from './pages/Eventos/Eventos';
-import Login from './pages/Login/Login';
 import NaoEncontrada from './pages/NaoEncontrada/NaoEncontrada';
+import Login from './pages/Login/Login';
+import { usuarioAutenticado, parseJwt } from './services/auth';
+
+const PermissaoAdmin = ({ component : Component }) => (
+    <Route 
+        render={props =>
+            usuarioAutenticado() && parseJwt().Role === "Administrador" ? (
+                <Component {...props}/>
+            ) : (
+                <Redirect to={{ pathname : "/login"}}/>
+            )
+        }
+    />
+)
+
+const PermissaoAluno = ({ component : Component }) => (
+    <Route 
+        render={props =>
+            usuarioAutenticado() && parseJwt().Role === "Aluno" ? (
+                <Component {...props}/>
+            ) : (
+                <Redirect to={{ pathname : "/login"}}/>
+            )
+        }
+    />
+)
 
 // Realizamos a criação das Rotas:
 const Rotas = (
     <Router>
         <div>
             <Switch>
-                <Route exact path="/" component={ () => <App titulo_pagina="Inicio | Gufos" /> } />
-                <Route path="/categorias" component={ () => <Categorias titulo_pagina="Categorias | Gufos" /> } />
-                <Route path="/eventos" component={ () => <Eventos titulo_pagina="Eventos | Gufos" /> } />
-                <Route path="/login" component={ () => <Login titulo_pagina="Login | Gufos" /> } />
-                <Route component={ () => <NaoEncontrada titulo_pagina="404 | Gufos" /> } />
+                <Route exact path="/" component={App} />
+                <PermissaoAdmin path="/categorias" component={Categorias} />
+                <PermissaoAluno path="/eventos" component={Eventos} />
+                {/* <Route path="/login" component={ () => <Login titulo_pagina="Login | Gufos"/> } /> */}
+                <Route path="/login" component={Login} />
+                <Route component={NaoEncontrada} />
             </Switch>
         </div>
     </Router>

@@ -1,20 +1,12 @@
 import React, { Component } from 'react';
 import Rodape from '../../components/Rodape/Rodape';
+
 import { MDBContainer, MDBBtn, MDBModal, MDBModalBody, MDBModalHeader, MDBModalFooter, MDBInput } from 'mdbreact';
 import Cabecalho from '../../components/Cabecalho/Cabecalho';
 
-// Importante
-// 1. Damos o bind quando não usamos arrow function 
-// 2. bind - Ligação, Vínculo
-// 3. console log - Debugar - Retornos
-// 4. preventDefault - Impede a página de ser carregada
-// 5. Toggle - Abrir e fechar modal - Função usando o MMDB
-// 6. Fetch - Onde ele vai buscar no bando de dados - Endpoint
-
 class Categorias extends Component {
-// Base usada para criar os states (Constructor)
+
     constructor(){
-        // Super - usado para manipular os states que são herdados de Component
         super();
         this.state = {
             lista : [],
@@ -22,12 +14,15 @@ class Categorias extends Component {
             loading: false,
             erroMsg : "",
             modal: false,
-            // Usamos para armazenar os dados a serem alterados
             editarModal : {
                 categoriaId: "",
                 titulo: ""
             }          
         }
+
+        this.cadastrarCategoria = this.cadastrarCategoria.bind(this);
+        this.deletarCategoria   = this.deletarCategoria.bind(this);
+        this.salvarAlteracoes   = this.salvarAlteracoes.bind(this);
     }
 
     toggle = () => {
@@ -36,24 +31,6 @@ class Categorias extends Component {
         });
     }
 
-// Método GET 
-    listaAtualizada = () =>{
-
-        this.setState({ loading : true});
-
-        fetch("http://localhost:5000/api/categoria")
-            .then(response => response.json())
-            .then(data => {
-                this.setState( {lista: data } )
-                this.setState({ loading : false});
-            })
-            .catch(error => {
-                this.setState({ loading : false});
-                console.log(error);
-            })
-    }
-
-// Método POST
     cadastrarCategoria(event){
 
         event.preventDefault();
@@ -74,9 +51,22 @@ class Categorias extends Component {
         .catch(error => console.log(error))
     }
 
-    // Método PUT - Mais demorado 
-    // Adcionado quando clicamos no botão editar para capturar e salvar no state os dados atuais
-    
+    listaAtualizada = () =>{
+
+        this.setState({ loading : true});
+
+        fetch("http://localhost:5000/api/categoria")
+            .then(response => response.json())
+            .then(data => {
+                this.setState( {lista: data } )
+                this.setState({ loading : false});
+            })
+            .catch(error => {
+                this.setState({ loading : false});
+                console.log(error);
+            })
+    }
+
     alterarCategoria = (produto) => {
         console.log(produto);
 
@@ -90,7 +80,6 @@ class Categorias extends Component {
         // Abrir Modal
         this.toggle();
     }
-    // Método que salve efetivamente as alterações 
 
     salvarAlteracoes = (event) => {
 
@@ -106,7 +95,6 @@ class Categorias extends Component {
         })
         .then(response => response.json())
         .then(
-            // Atrasado na requisição
             setTimeout(() => {
                 this.listaAtualizada()
             }, 1000)
@@ -117,22 +105,6 @@ class Categorias extends Component {
         this.toggle();
     }
 
-    // atualiza o valor do input
-    atualizaNome(input){
-        this.setState({ nome : input.target.value })
-    }
-    
-    // Atualiza os states dos inputs dentro do modal
-    atualizaEditarModalTitulo(input){
-        this.setState({ 
-            editarModal: {
-                categoriaId : this.state.editarModal.categoriaId,
-                titulo: input.target.value
-            }
-        })
-    }
-
-    // Método DELETE
     deletarCategoria = (id) =>{
         
         this.setState({ erroMsg : "" })
@@ -157,9 +129,18 @@ class Categorias extends Component {
         })
     }
 
-    
+    atualizaNome(input){
+        this.setState({ nome : input.target.value })
+    }
 
-    // Ciclo de vida dos componentes 
+    atualizaEditarModalTitulo(input){
+        this.setState({ 
+            editarModal: {
+                categoriaId : this.state.editarModal.categoriaId,
+                titulo: input.target.value
+            }
+        })
+    }
 
     UNSAFE_componentWillMount(){
         document.title = this.props.titulo_pagina;
@@ -188,10 +169,8 @@ class Categorias extends Component {
         let {loading} = this.state;
 
         return(
-            
             <div className="App">
                 <Cabecalho/>
-
                 <main className="conteudoPrincipal">
                     <section className="conteudoPrincipal-cadastro">
                     <h1 className="conteudoPrincipal-cadastro-titulo">Categorias</h1>
@@ -208,8 +187,6 @@ class Categorias extends Component {
 
                         <tbody id="tabela-lista-corpo">
                             {
-                                // Mapa que vai retornar a lista e coloca-se uma chave
-                                // porque cada linha em JSX precisa de um ID único
                                 this.state.lista.map(function(categoria){
                                     return (
                                         <tr key={categoria.categoriaId}>
@@ -257,7 +234,7 @@ class Categorias extends Component {
                     </div>
                     </section>
                 </main>
-    {/* Modal Material Design Bootstrap - Utilizamos para poder alterar o input dando setState */}
+
                 <MDBContainer>
                     {/* <MDBBtn onClick={this.toggle}>Modal</MDBBtn> */}
                     <form onSubmit={this.salvarAlteracoes}>

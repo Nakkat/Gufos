@@ -7,7 +7,6 @@ import Cabecalho from './components/Cabecalho/Cabecalho';
 function App() {
   return (
     <div>
-
       <Cabecalho/>
 
       <section className="conteudoImagem">

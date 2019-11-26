@@ -11,7 +11,7 @@ namespace backend.Controllers
     // Define a rota do controller, e diz que é um controller de API
     [Route("api/[controller]")] 
     [ApiController]
-    [Authorize]
+    // [Authorize]
     public class LocalizacaoController : ControllerBase
     {
         LocalizacaoRepository _repositorio = new LocalizacaoRepository();
